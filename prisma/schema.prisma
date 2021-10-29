@@ -1,0 +1,151 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  password     String
+  role         Role?    @default(USER)
+  street       String?
+  houseNumber  String?
+  neighborhood String?
+  city         String?
+  state        String?
+  postalCode   String?
+  created_at   DateTime @default(now())
+  updated_at   DateTime @default(now())
+  deleted_at   DateTime @default(now())
+
+  Location Location[]
+  Rating   Rating[]
+  @@map("users")
+}
+
+enum services_day_of_the_week {
+  monday
+  tuesday
+  wednesday
+  thursday
+  friday
+  saturday
+  sunday
+}
+
+model Service {
+  id              String                   @id @default(uuid())
+  day_of_the_week services_day_of_the_week
+  opening_time    DateTime
+  closing_time    DateTime
+  openned         Boolean
+  created_at      DateTime                 @default(now())
+  updated_at      DateTime                 @default(now())
+  deleted_at      DateTime                 @default(now())
+
+  Location         Location[]
+  Service_Location Service_Location[]
+  @@map("services")
+}
+
+enum category_location {
+  spots_touristic
+  food_and_drink
+  events_organized
+}
+
+model Category {
+  id         String            @id @default(uuid())
+  name       category_location
+  icon       String
+  created_at DateTime          @default(now())
+  updated_at DateTime          @default(now())
+  deleted_at DateTime          @default(now())
+
+  Location_Category Location_Category[]
+  @@map("categories")
+}
+
+model Location {
+  id                   String   @id @default(uuid())
+  name                 String
+  location_photo       String
+  location_phone       String
+  location_description String
+  city_photo           String
+  city_description     String
+  user                 User     @relation(fields: [user_id], references: [id])
+  service              Service  @relation(fields: [service_id], references: [id])
+  street               String
+  houseNumber          String
+  neighborhood         String
+  city                 String
+  state                String
+  postalCode           String
+  created_at           DateTime @default(now())
+  updated_at           DateTime @default(now())
+  deleted_at           DateTime @default(now())
+
+
+  user_id    String
+  service_id String
+
+  Rating            Rating[]
+  Location_Category Location_Category[]
+  Service_Location  Service_Location[]
+  @@map("locations")
+}
+
+model Rating {
+  id           String   @id @default(uuid())
+  message      String
+  rating_value Decimal
+  location     Location @relation(fields: [location_id], references: [id])
+  user         User     @relation(fields: [user_id], references: [id])
+  created_at   DateTime @default(now())
+  updated_at   DateTime @default(now())
+  deleted_at   DateTime @default(now())
+
+  location_id String
+  user_id     String
+  @@map("rating")
+}
+
+model Location_Category {
+  id         String   @id @default(uuid())
+  location   Location @relation(fields: [location_id], references: [id])
+  category   Category @relation(fields: [category_id], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+  deleted_at DateTime @default(now())
+
+  location_id String
+  category_id String
+  @@map("locations_category")
+}
+
+model Service_Location {
+  id         String   @id @default(uuid())
+  location   Location @relation(fields: [location_id], references: [id])
+  service    Service  @relation(fields: [service_id], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+  deleted_at DateTime @default(now())
+
+  location_id String
+  service_id  String
+  @@map("services_locations")
+}
